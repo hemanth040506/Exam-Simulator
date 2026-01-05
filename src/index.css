@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --bg-dark: #0f172a;
+  --bg-card: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --success: #22c55e;
+  --warning: #eab308;
+  --danger: #ef4444;
+  --border: #334155;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* ===== HOME PAGE ===== */
+
+.home-hero {
+  text-align: center;
+  padding: 80px 20px;
+  background: linear-gradient(180deg, #020617, #0f172a);
+}
+
+.home-hero h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.home-hero p {
+  color: #94a3b8;
+  margin-bottom: 30px;
+}
+
+.home-search {
+  width: 320px;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+.home-exams {
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.exam-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.exam-card {
+  background: #020617;
+  padding: 25px;
+  width: 260px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.exam-card:hover {
+  transform: translateY(-5px);
+}
+
+.exam-card h3 {
+  font-size: 22px;
+}
+
+.exam-card p {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 10px 0;
+}
+
+.exam-card button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+}
+
+.home-about,
+.home-contact {
+  padding: 60px 80px;
+  background: #020617;
+}
+
+.home-about p,
+.home-contact p {
+  color: #94a3b8;
+}
+
+.home-footer {
+  text-align: center;
+  padding: 20px;
+  background: #020617;
+  color: #64748b;
+}
