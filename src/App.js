@@ -1,8 +1,10 @@
-
 import React, { useState } from "react";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
+
 import Home from "./pages/Home";
 import Exam from "./pages/Exam";
+import ExamSets from "./pages/ExamSets";
+import Guidelines from "./pages/Guidelines";
 import Result from "./pages/Result";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -27,10 +29,6 @@ function App() {
     navigate("/");
   };
 
-  const handleStartExam = () => {
-    navigate("/exam");
-  };
-
   const handleFinishExam = (resultData) => {
     setFinalResult(resultData);
     navigate("/result");
@@ -48,12 +46,14 @@ function App() {
         element={
           <Home
             user={user}
-            onStart={handleStartExam}
-            onNavigate={(path) => navigate(path === 'home' ? '/' : `/${path}`)}
+            onNavigate={(path) =>
+              navigate(path === "home" ? "/" : `/${path}`)
+            }
             onLogout={handleLogout}
           />
         }
       />
+
       <Route
         path="/login"
         element={
@@ -63,6 +63,7 @@ function App() {
           />
         }
       />
+
       <Route
         path="/signup"
         element={
@@ -72,12 +73,16 @@ function App() {
           />
         }
       />
+
+      {/* Exam flow */}
+      <Route path="/exam/:examKey" element={<ExamSets />} />
+      <Route path="/exam-set/:setId" element={<Guidelines />} />
       <Route
-        path="/exam"
-        element={
-          <Exam onFinish={handleFinishExam} />
-        }
+        path="/exam/start/:setId"
+        element={<Exam onFinish={handleFinishExam} />}
       />
+
+      {/* Result */}
       <Route
         path="/result"
         element={
@@ -92,6 +97,7 @@ function App() {
           )
         }
       />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
