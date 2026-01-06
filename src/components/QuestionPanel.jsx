@@ -1,3 +1,4 @@
+import React from "react";
 
 const styles = {
   panel: {
@@ -41,7 +42,6 @@ const styles = {
     border: "1px solid #334155",
     borderRadius: "8px",
     cursor: "pointer",
-    transition: "all 0.2s",
   },
   optionLabelSelected: {
     background: "#2563eb",
@@ -72,10 +72,6 @@ const styles = {
     border: "none",
     fontWeight: "600",
     cursor: "pointer",
-    fontSize: "0.95rem",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
   },
   btnSecondary: {
     background: "#334155",
@@ -97,7 +93,7 @@ const styles = {
   btnSubmit: {
     background: "#22c55e",
     color: "#ffffff",
-  }
+  },
 };
 
 const QuestionPanel = ({
@@ -110,174 +106,120 @@ const QuestionPanel = ({
   onToggleMark,
   onNext,
   onPrev,
-  onSubmit
+  onSubmit,
 }) => {
+  if (!question) return null;
+
+  const renderOptions = () => {
+    // MCQ
+    if (!question.type || question.type === "mcq") {
+      return question.options.map((opt, i) => {
+        const isSelected = selectedAnswer === opt;
+        return (
+          <label
+            key={i}
+            style={{
+              ...styles.optionLabel,
+              ...(isSelected ? styles.optionLabelSelected : {}),
+            }}
+          >
+            <input
+              type="radio"
+              style={styles.radio}
+              checked={isSelected}
+              onChange={() => onSelectAnswer(opt)}
+            />
+            {opt}
+          </label>
+        );
+      });
+    }
+
+    // MSQ
+    if (question.type === "msq") {
+      const answers = Array.isArray(selectedAnswer) ? selectedAnswer : [];
+      return question.options.map((opt, i) => {
+        const isSelected = answers.includes(opt);
+        return (
+          <label
+            key={i}
+            style={{
+              ...styles.optionLabel,
+              ...(isSelected ? styles.optionLabelSelected : {}),
+            }}
+          >
+            <input
+              type="checkbox"
+              style={styles.radio}
+              checked={isSelected}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onSelectAnswer([...answers, opt]);
+                } else {
+                  onSelectAnswer(answers.filter((a) => a !== opt));
+                }
+              }}
+            />
+            {opt}
+          </label>
+        );
+      });
+    }
+
+    // INTEGER / NAT
+    if (question.type === "integer") {
+      return (
+        <input
+          type="number"
+          value={selectedAnswer ?? ""}
+          onChange={(e) => onSelectAnswer(e.target.value)}
+          placeholder="Enter numeric answer"
+          style={{
+            padding: "12px",
+            background: "#1e293b",
+            border: "1px solid #334155",
+            borderRadius: "8px",
+            color: "#f8fafc",
+          }}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div style={styles.panel}>
       <div>
         <div style={styles.questionHeader}>
-          <h3 style={{ margin: 0, color: "#94a3b8" }}>
-            Question {currentIndex + 1} <span style={{ fontSize: "0.9em", opacity: 0.7 }}>/ {totalQuestions}</span>
+          <h3 style={{ color: "#94a3b8" }}>
+            Question {currentIndex + 1} / {totalQuestions}
           </h3>
           <span style={styles.statusBadge}>
-<<<<<<< HEAD
-            Marks: {question.marks || 1} | Neg: {question.negativeMarks !== undefined ? question.negativeMarks : (question.marks ? (question.marks / 3).toFixed(2) : 0.33)}
-=======
-            Marks: {question.marks || 1} | Neg: {question.marks ? (question.marks / 3).toFixed(2) : 0.33}
->>>>>>> 41fdbde (Finalize clean project structure and UI components)
+            Marks: {question.marks || 1} | Neg:{" "}
+            {question.negativeMarks ?? 0}
           </span>
         </div>
 
         <p style={styles.questionText}>{question.question}</p>
 
-<<<<<<< HEAD
-        {/* MCQ - Radio buttons (single selection) */}
-        {/* Default to MCQ if type is not specified (backward compatibility) */}
-        {(!question.type || question.type === 'mcq') && question.options && question.options.length > 0 && (
-          <div style={styles.optionsList}>
-            {question.options.map((opt, i) => {
-              const isSelected = selectedAnswer === opt;
-              return (
-                <label
-                  key={i}
-                  style={{
-                    ...styles.optionLabel,
-                    ...(isSelected ? styles.optionLabelSelected : {})
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name={`q-${question.id}`}
-                    style={styles.radio}
-                    checked={isSelected}
-                    onChange={() => onSelectAnswer(opt)}
-                  />
-                  {opt}
-                </label>
-              );
-            })}
-          </div>
-        )}
-
-        {/* MSQ - Checkboxes (multiple selection) */}
-        {question.type === 'msq' && question.options && question.options.length > 0 && (
-          <div style={styles.optionsList}>
-            {question.options.map((opt, i) => {
-              // Ensure selectedAnswer is always treated as an array for MSQ
-              const selectedAnswers = Array.isArray(selectedAnswer) 
-                ? selectedAnswer 
-                : (selectedAnswer ? [selectedAnswer] : []);
-              const isSelected = selectedAnswers.includes(opt);
-              return (
-                <label
-                  key={i}
-                  style={{
-                    ...styles.optionLabel,
-                    ...(isSelected ? styles.optionLabelSelected : {})
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    name={`q-${question.id}-${i}`}
-                    style={styles.radio}
-                    checked={isSelected}
-                    onChange={(e) => {
-                      const currentAnswers = Array.isArray(selectedAnswer) 
-                        ? selectedAnswer 
-                        : (selectedAnswer ? [selectedAnswer] : []);
-                      if (e.target.checked) {
-                        // Add option to selected answers
-                        onSelectAnswer([...currentAnswers, opt]);
-                      } else {
-                        // Remove option from selected answers
-                        onSelectAnswer(currentAnswers.filter(a => a !== opt));
-                      }
-                    }}
-                  />
-                  {opt}
-                </label>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Integer (NAT) - Numeric input */}
-        {question.type === 'integer' && (
-          <div style={{ marginTop: "16px" }}>
-            <input
-              type="number"
-              value={selectedAnswer || ''}
-              onChange={(e) => {
-                const value = e.target.value;
-                // Allow empty string or valid number
-                if (value === '' || !isNaN(value)) {
-                  onSelectAnswer(value === '' ? '' : Number(value));
-                }
-              }}
-              placeholder="Enter your answer (numeric value)"
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                fontSize: "16px",
-                background: "#1e293b",
-                border: "1px solid #334155",
-                borderRadius: "8px",
-                color: "#f8fafc",
-                outline: "none",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#3b82f6";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#334155";
-              }}
-            />
-            <p style={{ marginTop: "8px", fontSize: "14px", color: "#94a3b8" }}>
-              Enter a numeric value only
-            </p>
-          </div>
-        )}
-=======
-        <div style={styles.optionsList}>
-          {question.options.map((opt, i) => {
-            const isSelected = selectedAnswer === opt;
-            return (
-              <label
-                key={i}
-                style={{
-                  ...styles.optionLabel,
-                  ...(isSelected ? styles.optionLabelSelected : {})
-                }}
-              >
-                <input
-                  type="radio"
-                  name={`q-${question.id}`}
-                  style={styles.radio}
-                  checked={isSelected}
-                  onChange={() => onSelectAnswer(opt)}
-                />
-                {opt}
-              </label>
-            );
-          })}
-        </div>
->>>>>>> 41fdbde (Finalize clean project structure and UI components)
+        <div style={styles.optionsList}>{renderOptions()}</div>
       </div>
 
       <div style={styles.footer}>
         <button
           style={{
             ...styles.btn,
-            ...(isMarked ? styles.btnWarningActive : styles.btnWarning)
+            ...(isMarked ? styles.btnWarningActive : styles.btnWarning),
           }}
           onClick={onToggleMark}
         >
-          {isMarked ? "★ Marked for Review" : "☆ Mark for Review"}
+          {isMarked ? "★ Marked" : "☆ Mark for Review"}
         </button>
 
         <div style={styles.navGroup}>
           <button
-            style={{ ...styles.btn, ...styles.btnSecondary, opacity: currentIndex === 0 ? 0.5 : 1 }}
+            style={{ ...styles.btn, ...styles.btnSecondary }}
             onClick={onPrev}
             disabled={currentIndex === 0}
           >

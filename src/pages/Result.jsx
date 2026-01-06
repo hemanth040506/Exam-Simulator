@@ -89,7 +89,6 @@ const Result = ({ score, stats, onGoHome }) => {
           {score} <span style={{ fontSize: "1rem", color: "#64748b" }}>Marks</span>
         </div>
 
-<<<<<<< HEAD
         {/* Total and Attempted Stats */}
         <div style={{ ...styles.grid, gridTemplateColumns: "1fr 1fr", marginBottom: "16px" }}>
           <div style={styles.statItem}>
@@ -105,33 +104,29 @@ const Result = ({ score, stats, onGoHome }) => {
         </div>
 
         {/* Correct, Wrong, Unattempted Stats */}
-        <div style={styles.grid}>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statValue, color: "#22c55e" }}>{stats.correct || 0}</span>
-            <span style={styles.statLabel}>Correct</span>
-          </div>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statValue, color: "#ef4444" }}>{stats.wrong || 0}</span>
-            <span style={styles.statLabel}>Wrong</span>
-          </div>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statValue, color: "#cbd5e1" }}>{stats.unattempted || 0}</span>
-=======
-        <div style={styles.grid}>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statValue, color: "#22c55e" }}>{stats.correct}</span>
-            <span style={styles.statLabel}>Correct</span>
-          </div>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statValue, color: "#ef4444" }}>{stats.wrong}</span>
-            <span style={styles.statLabel}>Wrong</span>
-          </div>
-          <div style={styles.statItem}>
-            <span style={{ ...styles.statValue, color: "#cbd5e1" }}>{stats.unattempted}</span>
->>>>>>> 41fdbde (Finalize clean project structure and UI components)
-            <span style={styles.statLabel}>Skipped</span>
-          </div>
-        </div>
+        {/* Correct, Wrong, Unattempted Stats */}
+<div style={styles.grid}>
+  <div style={styles.statItem}>
+    <span style={{ ...styles.statValue, color: "#22c55e" }}>
+      {stats.correct || 0}
+    </span>
+    <span style={styles.statLabel}>Correct</span>
+  </div>
+
+  <div style={styles.statItem}>
+    <span style={{ ...styles.statValue, color: "#ef4444" }}>
+      {stats.wrong || 0}
+    </span>
+    <span style={styles.statLabel}>Wrong</span>
+  </div>
+
+  <div style={styles.statItem}>
+    <span style={{ ...styles.statValue, color: "#cbd5e1" }}>
+      {stats.unattempted || 0}
+    </span>
+    <span style={styles.statLabel}>Skipped</span>
+  </div>
+</div>
 
         <button style={styles.btn} onClick={onGoHome}>
           Return to Home
