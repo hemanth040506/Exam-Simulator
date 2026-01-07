@@ -66,6 +66,7 @@ function Exam({ onFinish }) {
         const formatted = qJson.data.map((q, i) => ({
           id: i + 1,
           question: q.questionText,
+          type: q.type || "mcq", // Preserve question type (mcq, msq, integer, nat)
           options: q.options || [], // Ensure options is always an array
           answer: String(q.correctAnswer),
           marks: q.marks,
@@ -102,25 +103,63 @@ function Exam({ onFinish }) {
   // ======================
   const calculateResult = useCallback(() => {
     let score = 0, correct = 0, wrong = 0, unattempted = 0;
+    
+    // Breakdown by question type
+    let mcqCorrect = 0, mcqWrong = 0, mcqMarks = 0;
+    let natCorrect = 0, natWrong = 0, natMarks = 0;
 
     questions.forEach((q) => {
       const ans = answers[q.id];
-      if (!ans) {
+      if (!ans || ans === "") {
         unattempted++;
         return;
       }
-      if (ans === q.answer) {
-        score += q.marks;
-        correct++;
+
+      // NAT/Integer questions: exact numeric comparison, no negative marking
+      if (q.type === "integer" || q.type === "nat") {
+        const userNum = Number(ans);
+        const correctNum = Number(q.answer);
+        if (!isNaN(userNum) && !isNaN(correctNum) && userNum === correctNum) {
+          score += q.marks;
+          correct++;
+          natCorrect++;
+          natMarks += q.marks;
+        } else {
+          // NAT questions: no negative marking for wrong answers
+          wrong++;
+          natWrong++;
+        }
       } else {
-        score -= q.negativeMarks;
-        wrong++;
+        // MCQ/MSQ: string comparison with negative marking
+        if (ans === q.answer) {
+          score += q.marks;
+          correct++;
+          mcqCorrect++;
+          mcqMarks += q.marks;
+        } else {
+          score -= q.negativeMarks;
+          wrong++;
+          mcqWrong++;
+          mcqMarks -= q.negativeMarks;
+        }
       }
     });
 
     return {
       score: score.toFixed(2),
       stats: { correct, wrong, unattempted, total: questions.length },
+      breakdown: {
+        mcq: {
+          correct: mcqCorrect,
+          wrong: mcqWrong,
+          marks: mcqMarks.toFixed(2),
+        },
+        nat: {
+          correct: natCorrect,
+          wrong: natWrong,
+          marks: natMarks.toFixed(2),
+        },
+      },
     };
   }, [answers, questions]);
 
@@ -189,58 +228,57 @@ function Exam({ onFinish }) {
         violations={violations}
       />
 
-<div style={{ display: "flex", height: "calc(100% - 64px)" }}>
-  {/* LEFT: Question */}
-  <div style={{ flex: 1, overflow: "hidden" }}>
-    <QuestionPanel
-      question={q}
-      currentIndex={safeCurrentQuestion}
-      totalQuestions={questions.length}
-      selectedAnswer={answers[q?.id]}
-      isMarked={marked[q?.id]}
-      onSelectAnswer={handleAnswerSelect}
-      onToggleMark={() => {
-        if (!q || !q.id) return;
-        setMarked({ ...marked, [q.id]: !marked[q.id] });
-      }}
-      onNext={() =>
-        setCurrentQuestion((c) =>
-          Math.min(c + 1, questions.length - 1)
-        )
-      }
-      onPrev={() => setCurrentQuestion((c) => Math.max(c - 1, 0))}
-      onSubmit={() => setShowSummary(true)}
-    />
-  </div>
+      <div style={{ display: "flex", height: "calc(100% - 64px)" }}>
+        {/* LEFT: Question */}
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <QuestionPanel
+            question={q}
+            currentIndex={safeCurrentQuestion}
+            totalQuestions={questions.length}
+            selectedAnswer={answers[q?.id]}
+            isMarked={marked[q?.id]}
+            onSelectAnswer={handleAnswerSelect}
+            onToggleMark={() => {
+              if (!q || !q.id) return;
+              setMarked({ ...marked, [q.id]: !marked[q.id] });
+            }}
+            onNext={() =>
+              setCurrentQuestion((c) =>
+                Math.min(c + 1, questions.length - 1)
+              )
+            }
+            onPrev={() => setCurrentQuestion((c) => Math.max(c - 1, 0))}
+            onSubmit={() => setShowSummary(true)}
+          />
+        </div>
 
-  {/* RIGHT: Palette */}
-  <div
-    style={{
-      width: "320px",
-      borderLeft: "1px solid #334155",
-      background: "#1e293b",
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-    }}
-  >
-    <div style={{ padding: "16px", overflowY: "auto" }}>
-      <PalettePanel
-        questions={questions}
-        currentQuestion={safeCurrentQuestion}
-        answers={answers}
-        marked={marked}
-        onJumpToQuestion={(index) => {
-          const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
-          setCurrentQuestion(safeIndex);
-        }}
-      />
-      <Legend />
-      <LiveSummary stats={getLiveStats()} />
-    </div>
-  </div>
-</div>
-
+        {/* RIGHT: Palette */}
+        <div
+          style={{
+            width: "320px",
+            borderLeft: "1px solid #334155",
+            background: "#1e293b",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div style={{ padding: "16px", overflowY: "auto" }}>
+            <PalettePanel
+              questions={questions}
+              currentQuestion={safeCurrentQuestion}
+              answers={answers}
+              marked={marked}
+              onJumpToQuestion={(index) => {
+                const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
+                setCurrentQuestion(safeIndex);
+              }}
+            />
+            <Legend />
+            <LiveSummary stats={getLiveStats()} />
+          </div>
+        </div>
+      </div>
 
       {showSummary && (
         <SubmitModal

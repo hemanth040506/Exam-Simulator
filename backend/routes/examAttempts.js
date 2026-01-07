@@ -38,6 +38,7 @@ const evaluateAnswer = (question, userAnswer) => {
       break;
 
     case 'integer':
+    case 'nat':
       // Numeric answer: compare as numbers
       const userNum = Number(userAnswer);
       const correctNum = Number(correctAnswer);
@@ -51,7 +52,13 @@ const evaluateAnswer = (question, userAnswer) => {
   if (isCorrect) {
     score = marks;
   } else {
-    score = -negativeMarks;
+    // NAT/Integer questions: no negative marking (score = 0 for wrong answers)
+    if (type === 'integer' || type === 'nat') {
+      score = 0;
+    } else {
+      // MCQ/MSQ: apply negative marking
+      score = -negativeMarks;
+    }
   }
 
   return { isCorrect, score };

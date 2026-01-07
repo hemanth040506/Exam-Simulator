@@ -77,7 +77,7 @@ const styles = {
   }
 };
 
-const Result = ({ score, stats, onGoHome }) => {
+const Result = ({ score, stats, breakdown, onGoHome }) => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -104,29 +104,130 @@ const Result = ({ score, stats, onGoHome }) => {
         </div>
 
         {/* Correct, Wrong, Unattempted Stats */}
-        {/* Correct, Wrong, Unattempted Stats */}
-<div style={styles.grid}>
-  <div style={styles.statItem}>
-    <span style={{ ...styles.statValue, color: "#22c55e" }}>
-      {stats.correct || 0}
-    </span>
-    <span style={styles.statLabel}>Correct</span>
-  </div>
+        <div style={styles.grid}>
+          <div style={styles.statItem}>
+            <span style={{ ...styles.statValue, color: "#22c55e" }}>
+              {stats.correct || 0}
+            </span>
+            <span style={styles.statLabel}>Correct</span>
+          </div>
 
-  <div style={styles.statItem}>
-    <span style={{ ...styles.statValue, color: "#ef4444" }}>
-      {stats.wrong || 0}
-    </span>
-    <span style={styles.statLabel}>Wrong</span>
-  </div>
+          <div style={styles.statItem}>
+            <span style={{ ...styles.statValue, color: "#ef4444" }}>
+              {stats.wrong || 0}
+            </span>
+            <span style={styles.statLabel}>Wrong</span>
+          </div>
 
-  <div style={styles.statItem}>
-    <span style={{ ...styles.statValue, color: "#cbd5e1" }}>
-      {stats.unattempted || 0}
-    </span>
-    <span style={styles.statLabel}>Skipped</span>
-  </div>
-</div>
+          <div style={styles.statItem}>
+            <span style={{ ...styles.statValue, color: "#cbd5e1" }}>
+              {stats.unattempted || 0}
+            </span>
+            <span style={styles.statLabel}>Skipped</span>
+          </div>
+        </div>
+
+        {/* MCQ vs NAT Breakdown */}
+        {breakdown && (
+          <>
+            <div style={{ 
+              marginTop: "32px", 
+              marginBottom: "16px", 
+              borderTop: "1px solid #334155", 
+              paddingTop: "24px" 
+            }}>
+              <h3 style={{ 
+                fontSize: "1.1rem", 
+                fontWeight: "600", 
+                color: "#f1f5f9", 
+                marginBottom: "20px" 
+              }}>
+                Question Type Breakdown
+              </h3>
+              
+              {/* MCQ Section */}
+              <div style={{ 
+                background: "#0f172a", 
+                padding: "16px", 
+                borderRadius: "12px", 
+                marginBottom: "12px" 
+              }}>
+                <div style={{ 
+                  fontSize: "0.95rem", 
+                  fontWeight: "600", 
+                  color: "#3b82f6", 
+                  marginBottom: "12px" 
+                }}>
+                  MCQ Questions
+                </div>
+                <div style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "1fr 1fr 1fr", 
+                  gap: "12px" 
+                }}>
+                  <div>
+                    <div style={{ ...styles.statValue, color: "#22c55e", fontSize: "1.1rem" }}>
+                      {breakdown.mcq?.correct || 0}
+                    </div>
+                    <div style={styles.statLabel}>Correct</div>
+                  </div>
+                  <div>
+                    <div style={{ ...styles.statValue, color: "#ef4444", fontSize: "1.1rem" }}>
+                      {breakdown.mcq?.wrong || 0}
+                    </div>
+                    <div style={styles.statLabel}>Wrong</div>
+                  </div>
+                  <div>
+                    <div style={{ ...styles.statValue, color: "#3b82f6", fontSize: "1.1rem" }}>
+                      {breakdown.mcq?.marks || "0.00"}
+                    </div>
+                    <div style={styles.statLabel}>Marks</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* NAT Section */}
+              <div style={{ 
+                background: "#0f172a", 
+                padding: "16px", 
+                borderRadius: "12px" 
+              }}>
+                <div style={{ 
+                  fontSize: "0.95rem", 
+                  fontWeight: "600", 
+                  color: "#8b5cf6", 
+                  marginBottom: "12px" 
+                }}>
+                  NAT Questions
+                </div>
+                <div style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "1fr 1fr 1fr", 
+                  gap: "12px" 
+                }}>
+                  <div>
+                    <div style={{ ...styles.statValue, color: "#22c55e", fontSize: "1.1rem" }}>
+                      {breakdown.nat?.correct || 0}
+                    </div>
+                    <div style={styles.statLabel}>Correct</div>
+                  </div>
+                  <div>
+                    <div style={{ ...styles.statValue, color: "#ef4444", fontSize: "1.1rem" }}>
+                      {breakdown.nat?.wrong || 0}
+                    </div>
+                    <div style={styles.statLabel}>Wrong</div>
+                  </div>
+                  <div>
+                    <div style={{ ...styles.statValue, color: "#8b5cf6", fontSize: "1.1rem" }}>
+                      {breakdown.nat?.marks || "0.00"}
+                    </div>
+                    <div style={styles.statLabel}>Marks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         <button style={styles.btn} onClick={onGoHome}>
           Return to Home

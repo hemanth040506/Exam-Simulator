@@ -173,7 +173,7 @@ const QuestionPanel = ({
     }
 
     // INTEGER / NAT
-    if (question.type === "integer") {
+    if (question.type === "integer" || question.type === "nat") {
       return (
         <input
           type="number"
@@ -186,6 +186,9 @@ const QuestionPanel = ({
             border: "1px solid #334155",
             borderRadius: "8px",
             color: "#f8fafc",
+            fontSize: "1rem",
+            width: "100%",
+            maxWidth: "300px",
           }}
         />
       );

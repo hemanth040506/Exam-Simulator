@@ -91,6 +91,7 @@ function App() {
             <Result
               score={finalResult.score}
               stats={finalResult.stats}
+              breakdown={finalResult.breakdown}
               onGoHome={handleGoHome}
             />
           ) : (
