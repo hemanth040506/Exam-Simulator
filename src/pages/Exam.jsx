@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { examData } from "../data";
 
 import ExamHeader from "../components/ExamHeader";
@@ -11,7 +11,6 @@ import SubmitModal from "../components/SubmitModal";
 
 function Exam({ onFinish }) {
   const { setId } = useParams();
-  const navigate = useNavigate();
 
   // ======================
   // State
@@ -29,8 +28,6 @@ function Exam({ onFinish }) {
   const [violations, setViolations] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [isPending, setIsPending] = useState(false);
-
-  const q = questions[currentQuestion];
 
   // ======================
   // Fetch Exam Data
@@ -69,7 +66,7 @@ function Exam({ onFinish }) {
         const formatted = qJson.data.map((q, i) => ({
           id: i + 1,
           question: q.questionText,
-          options: q.options,
+          options: q.options || [], // Ensure options is always an array
           answer: String(q.correctAnswer),
           marks: q.marks,
           negativeMarks: q.negativeMarks || 0,
@@ -90,14 +87,15 @@ function Exam({ onFinish }) {
   // ======================
   // Anti-cheat
   // ======================
-  const handleViolation = useCallback((msg) => {
-    setViolations((v) => {
-      const next = v + 1;
-      alert(`Warning ${next}/3: ${msg}`);
-      if (next >= 3) setTimeLeft(0);
-      return next;
-    });
-  }, []);
+  // Note: handleViolation is kept for future use if needed
+  // const handleViolation = useCallback((msg) => {
+  //   setViolations((v) => {
+  //     const next = v + 1;
+  //     alert(`Warning ${next}/3: ${msg}`);
+  //     if (next >= 3) setTimeLeft(0);
+  //     return next;
+  //   });
+  // }, []);
 
   // ======================
   // Result Calculation
@@ -151,8 +149,13 @@ function Exam({ onFinish }) {
   // ======================
   // Helpers
   // ======================
-  const handleAnswerSelect = (ans) =>
-    setAnswers({ ...answers, [q.id]: ans });
+  const handleAnswerSelect = useCallback((ans) => {
+    // Ensure currentQuestion is within bounds
+    const safeIndex = Math.max(0, Math.min(currentQuestion, questions.length - 1));
+    const currentQ = questions[safeIndex];
+    if (!currentQ || !currentQ.id) return;
+    setAnswers((prevAnswers) => ({ ...prevAnswers, [currentQ.id]: ans }));
+  }, [currentQuestion, questions]);
 
   const getLiveStats = () => {
     let attempted = Object.keys(answers).length;
@@ -169,6 +172,13 @@ function Exam({ onFinish }) {
   // ======================
   if (loading) return <div style={{ color: "#fff", textAlign: "center" }}>Loading...</div>;
   if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (!questions || questions.length === 0) return <div style={{ color: "#fff", textAlign: "center" }}>No questions available.</div>;
+  
+  // Ensure currentQuestion is within bounds
+  const safeCurrentQuestion = Math.max(0, Math.min(currentQuestion, questions.length - 1));
+  const q = questions[safeCurrentQuestion];
+  
+  if (!q) return <div style={{ color: "#fff", textAlign: "center" }}>Question not found.</div>;
 
   return (
     <div style={{ height: "100vh", background: "#0f172a", color: "#fff" }}>
@@ -179,32 +189,58 @@ function Exam({ onFinish }) {
         violations={violations}
       />
 
-      <div style={{ display: "flex", height: "calc(100% - 64px)" }}>
-        <QuestionPanel
-          question={q}
-          currentIndex={currentQuestion}
-          totalQuestions={questions.length}
-          selectedAnswer={answers[q?.id]}
-          isMarked={marked[q?.id]}
-          onSelectAnswer={handleAnswerSelect}
-          onToggleMark={() =>
-            setMarked({ ...marked, [q.id]: !marked[q.id] })
-          }
-          onNext={() =>
-            setCurrentQuestion((c) => Math.min(c + 1, questions.length - 1))
-          }
-          onPrev={() => setCurrentQuestion((c) => Math.max(c - 1, 0))}
-          onSubmit={() => setShowSummary(true)}
-        />
+<div style={{ display: "flex", height: "calc(100% - 64px)" }}>
+  {/* LEFT: Question */}
+  <div style={{ flex: 1, overflow: "hidden" }}>
+    <QuestionPanel
+      question={q}
+      currentIndex={safeCurrentQuestion}
+      totalQuestions={questions.length}
+      selectedAnswer={answers[q?.id]}
+      isMarked={marked[q?.id]}
+      onSelectAnswer={handleAnswerSelect}
+      onToggleMark={() => {
+        if (!q || !q.id) return;
+        setMarked({ ...marked, [q.id]: !marked[q.id] });
+      }}
+      onNext={() =>
+        setCurrentQuestion((c) =>
+          Math.min(c + 1, questions.length - 1)
+        )
+      }
+      onPrev={() => setCurrentQuestion((c) => Math.max(c - 1, 0))}
+      onSubmit={() => setShowSummary(true)}
+    />
+  </div>
 
-        <PalettePanel
-          questions={questions}
-          currentQuestion={currentQuestion}
-          answers={answers}
-          marked={marked}
-          onJumpToQuestion={setCurrentQuestion}
-        />
-      </div>
+  {/* RIGHT: Palette */}
+  <div
+    style={{
+      width: "320px",
+      borderLeft: "1px solid #334155",
+      background: "#1e293b",
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
+    <div style={{ padding: "16px", overflowY: "auto" }}>
+      <PalettePanel
+        questions={questions}
+        currentQuestion={safeCurrentQuestion}
+        answers={answers}
+        marked={marked}
+        onJumpToQuestion={(index) => {
+          const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
+          setCurrentQuestion(safeIndex);
+        }}
+      />
+      <Legend />
+      <LiveSummary stats={getLiveStats()} />
+    </div>
+  </div>
+</div>
+
 
       {showSummary && (
         <SubmitModal

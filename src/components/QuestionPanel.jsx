@@ -113,6 +113,9 @@ const QuestionPanel = ({
   const renderOptions = () => {
     // MCQ
     if (!question.type || question.type === "mcq") {
+      if (!question.options || !Array.isArray(question.options)) {
+        return <div style={{ color: "#ef4444", padding: "16px" }}>No options available for this question.</div>;
+      }
       return question.options.map((opt, i) => {
         const isSelected = selectedAnswer === opt;
         return (
@@ -138,6 +141,9 @@ const QuestionPanel = ({
     // MSQ
     if (question.type === "msq") {
       const answers = Array.isArray(selectedAnswer) ? selectedAnswer : [];
+      if (!question.options || !Array.isArray(question.options)) {
+        return <div style={{ color: "#ef4444", padding: "16px" }}>No options available for this question.</div>;
+      }
       return question.options.map((opt, i) => {
         const isSelected = answers.includes(opt);
         return (
