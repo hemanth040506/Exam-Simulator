@@ -1,21 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
 
 // Load environment variables
 dotenv.config();
+
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth');
+const examRoutes = require('./routes/exams');
+const examAttemptRoutes = require('./routes/examAttempts');
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Routes
-const authRoutes = require('./routes/auth');
-const examRoutes = require('./routes/exams');
-const examAttemptRoutes = require('./routes/examAttempts');
 
 // Health check route
 app.get('/api/health', (req, res) => {

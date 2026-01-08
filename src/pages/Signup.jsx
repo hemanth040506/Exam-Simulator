@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const styles = {
     container: {
@@ -18,7 +18,8 @@ const styles = {
         border: "1px solid #334155",
         width: "100%",
         maxWidth: "400px",
-        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        boxShadow:
+            "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
     },
     title: {
         fontSize: "2rem",
@@ -55,7 +56,6 @@ const styles = {
         color: "#fff",
         fontSize: "1rem",
         outline: "none",
-        transition: "border 0.2s",
     },
     button: {
         marginTop: "10px",
@@ -67,7 +67,6 @@ const styles = {
         fontSize: "1rem",
         fontWeight: "600",
         cursor: "pointer",
-        transition: "background 0.2s",
     },
     footer: {
         marginTop: "24px",
@@ -81,17 +80,51 @@ const styles = {
     },
 };
 
-const Signup = ({ onSignup, onSwitchToLogin }) => {
+const Signup = () => {
+    const navigate = useNavigate();
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (name && email && password) {
-            onSignup({ name, email });
-        } else {
-            alert("Please fill in all fields");
+        setError("");
+
+        if (!name || !email || !password) {
+            setError("All fields are required");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const response = await fetch(
+                "http://localhost:5000/api/auth/signup",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Signup failed");
+            }
+
+            // Save token
+            localStorage.setItem("token", data.token);
+
+            // Redirect to login (or dashboard later)
+            navigate("/login");
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -99,7 +132,21 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
         <div style={styles.container}>
             <div style={styles.card}>
                 <h2 style={styles.title}>Create Account</h2>
-                <p style={styles.subtitle}>Get started with your exam prep today</p>
+                <p style={styles.subtitle}>
+                    Get started with your exam prep today
+                </p>
+
+                {error && (
+                    <div
+                        style={{
+                            color: "#ef4444",
+                            marginBottom: "16px",
+                            textAlign: "center",
+                        }}
+                    >
+                        {error}
+                    </div>
+                )}
 
                 <form style={styles.form} onSubmit={handleSubmit}>
                     <div style={styles.inputGroup}>
@@ -110,7 +157,6 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
                             placeholder="Your Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            required
                         />
                     </div>
 
@@ -122,7 +168,6 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
                             placeholder="name@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
                         />
                     </div>
 
@@ -134,23 +179,28 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
                             placeholder="Create a password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
                         />
                     </div>
 
                     <button
                         type="submit"
-                        style={styles.button}
-                        onMouseOver={(e) => e.target.style.background = "#16a34a"}
-                        onMouseOut={(e) => e.target.style.background = "#22c55e"}
+                        disabled={loading}
+                        style={{
+                            ...styles.button,
+                            opacity: loading ? 0.7 : 1,
+                            cursor: loading ? "not-allowed" : "pointer",
+                        }}
                     >
-                        Create Account
+                        {loading ? "Creating Account..." : "Create Account"}
                     </button>
                 </form>
 
                 <div style={styles.footer}>
                     Already have an account?{" "}
-                    <span style={styles.link} onClick={onSwitchToLogin}>
+                    <span
+                        style={styles.link}
+                        onClick={() => navigate("/login")}
+                    >
                         Sign in
                     </span>
                 </div>

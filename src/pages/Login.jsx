@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const styles = {
     container: {
@@ -81,17 +82,46 @@ const styles = {
     },
 };
 
-const Login = ({ onLogin, onSwitchToSignup }) => {
+const Login = ({ setUser }) => {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Simulate login
-        if (email && password) {
-            onLogin({ name: email.split("@")[0], email });
-        } else {
-            alert("Please enter valid credentials");
+        setError("");
+
+        if (!email || !password) {
+            setError("Please enter both email and password");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Login failed");
+            }
+
+            // Success
+            localStorage.setItem("token", data.token);
+            // Pass user data up to App.js
+            setUser(data.user);
+            navigate("/home");
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -100,6 +130,7 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
             <div style={styles.card}>
                 <h2 style={styles.title}>Welcome Back</h2>
                 <p style={styles.subtitle}>Enter your credentials to access your account</p>
+                {error && <div style={{ color: "#ef4444", marginBottom: "16px", textAlign: "center" }}>{error}</div>}
 
                 <form style={styles.form} onSubmit={handleSubmit}>
                     <div style={styles.inputGroup}>
@@ -128,17 +159,18 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
 
                     <button
                         type="submit"
-                        style={styles.button}
-                        onMouseOver={(e) => e.target.style.background = "#2563eb"}
-                        onMouseOut={(e) => e.target.style.background = "#3b82f6"}
+                        disabled={loading}
+                        style={{ ...styles.button, opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
+                        onMouseOver={(e) => { if (!loading) e.target.style.background = "#2563eb"; }}
+                        onMouseOut={(e) => { if (!loading) e.target.style.background = "#3b82f6"; }}
                     >
-                        Sign In
+                        {loading ? "Signing In..." : "Sign In"}
                     </button>
                 </form>
 
                 <div style={styles.footer}>
                     Don't have an account?{" "}
-                    <span style={styles.link} onClick={onSwitchToSignup}>
+                    <span style={styles.link} onClick={() => navigate("/signup")}>
                         Sign up
                     </span>
                 </div>

@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const styles = {
     nav: {
@@ -68,10 +68,12 @@ const styles = {
     }
 };
 
-const Navbar = ({ user, onNavigate, onLogout }) => {
+const Navbar = ({ user, onLogout }) => {
+    const navigate = useNavigate();
+
     return (
         <nav style={styles.nav}>
-            <div style={styles.brand} onClick={() => onNavigate('home')}>
+            <div style={styles.brand} onClick={() => navigate('/home')}>
                 <span style={styles.gradientText}>Gate</span> Simulator
             </div>
 
@@ -91,9 +93,9 @@ const Navbar = ({ user, onNavigate, onLogout }) => {
                     </div>
                 ) : (
                     <>
-                        <span style={styles.link} onClick={() => onNavigate('login')}>Sign In</span>
-                        <button style={styles.primaryBtn} onClick={() => onNavigate('signup')}>
-                            Get Started
+                        <span style={styles.link} onClick={() => navigate('/login')}>Sign In</span>
+                        <button style={styles.primaryBtn} onClick={() => navigate('/signup')}>
+                            Sign Up
                         </button>
                     </>
                 )}

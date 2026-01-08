@@ -226,6 +226,14 @@ const QuestionPanel = ({
           {isMarked ? "★ Marked" : "☆ Mark for Review"}
         </button>
 
+        <button
+          style={{ ...styles.btn, ...styles.btnSecondary, marginLeft: "12px" }}
+          onClick={() => onSelectAnswer(null)}
+          title="Clear Response"
+        >
+          Clear Response
+        </button>
+
         <div style={styles.navGroup}>
           <button
             style={{ ...styles.btn, ...styles.btnSecondary }}

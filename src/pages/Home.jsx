@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "../index.css";
 
-export default function Home() {
+export default function Home({ user, onLogout }) {
   const navigate = useNavigate();
 
   return (
     <>
-      <Navbar />
+      <Navbar user={user} onLogout={onLogout} />
 
       {/* HERO SECTION */}
       <section className="home-hero">

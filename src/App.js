@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 
 
+import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import Exam from "./pages/Exam";
 import ExamSets from "./pages/ExamSets";
@@ -15,17 +16,9 @@ function App() {
   const [finalResult, setFinalResult] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-    navigate("/");
-  };
-
-  const handleSignup = (userData) => {
-    setUser(userData);
-    navigate("/");
-  };
-
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("exam_progress_GATE"); // Optional: clear exam progress too
     setUser(null);
     navigate("/");
   };
@@ -37,7 +30,7 @@ function App() {
 
   const handleGoHome = () => {
     setFinalResult(null);
-    navigate("/");
+    navigate("/home");
   };
 
   return (
@@ -45,11 +38,18 @@ function App() {
       <Route
         path="/"
         element={
+          <LandingPage
+            user={user}
+            onLogout={handleLogout}
+          />
+        }
+      />
+
+      <Route
+        path="/home"
+        element={
           <Home
             user={user}
-            onNavigate={(path) =>
-              navigate(path === "home" ? "/" : `/${path}`)
-            }
             onLogout={handleLogout}
           />
         }
@@ -59,8 +59,7 @@ function App() {
         path="/login"
         element={
           <Login
-            onLogin={handleLogin}
-            onSwitchToSignup={() => navigate("/signup")}
+            setUser={setUser}
           />
         }
       />
@@ -68,10 +67,7 @@ function App() {
       <Route
         path="/signup"
         element={
-          <Signup
-            onSignup={handleSignup}
-            onSwitchToLogin={() => navigate("/login")}
-          />
+          <Signup />
         }
       />
 

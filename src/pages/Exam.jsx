@@ -25,7 +25,8 @@ function Exam({ onFinish }) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [marked, setMarked] = useState({});
-  const [violations, setViolations] = useState(0);
+  const [visited, setVisited] = useState({}); // New: Track visited questions
+  const [violations] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
@@ -83,7 +84,63 @@ function Exam({ onFinish }) {
     };
 
     loadExam();
+    loadExam();
   }, [setId]);
+
+  // ======================
+  // Persistence: Restore
+  // ======================
+  useEffect(() => {
+    if (loading) return;
+
+    try {
+      const key = `exam_progress_${setId || 'GATE'}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.timeLeft) setTimeLeft(parsed.timeLeft);
+        if (parsed.answers) setAnswers(parsed.answers);
+        if (parsed.marked) setMarked(parsed.marked);
+        if (parsed.visited) setVisited(parsed.visited);
+        // Only set current question if valid
+        if (parsed.currentQuestion !== undefined) {
+          setCurrentQuestion(parsed.currentQuestion);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to restore exam progress", e);
+    }
+  }, [loading, setId]);
+
+  // ======================
+  // Persistence: Save
+  // ======================
+  useEffect(() => {
+    if (loading || !questions.length) return;
+
+    const key = `exam_progress_${setId || 'GATE'}`;
+    const state = {
+      timeLeft,
+      answers,
+      marked,
+      visited,
+      currentQuestion
+    };
+
+    localStorage.setItem(key, JSON.stringify(state));
+  }, [timeLeft, answers, marked, visited, currentQuestion, loading, setId, questions.length]);
+
+  // ======================
+  // Track Visited
+  // ======================
+  useEffect(() => {
+    if (questions.length > 0) {
+      const currentQ = questions[currentQuestion];
+      if (currentQ && currentQ.id) {
+        setVisited((prev) => ({ ...prev, [currentQ.id]: true }));
+      }
+    }
+  }, [currentQuestion, questions]);
 
   // ======================
   // Anti-cheat
@@ -103,7 +160,7 @@ function Exam({ onFinish }) {
   // ======================
   const calculateResult = useCallback(() => {
     let score = 0, correct = 0, wrong = 0, unattempted = 0;
-    
+
     // Breakdown by question type
     let mcqCorrect = 0, mcqWrong = 0, mcqMarks = 0;
     let natCorrect = 0, natWrong = 0, natMarks = 0;
@@ -169,9 +226,10 @@ function Exam({ onFinish }) {
   const submitExam = useCallback(() => {
     setIsPending(true);
     setTimeout(() => {
+      localStorage.removeItem(`exam_progress_${setId || 'GATE'}`);
       onFinish(calculateResult());
     }, 1200);
-  }, [calculateResult, onFinish]);
+  }, [calculateResult, onFinish, setId]);
 
   // ======================
   // Timer
@@ -212,11 +270,11 @@ function Exam({ onFinish }) {
   if (loading) return <div style={{ color: "#fff", textAlign: "center" }}>Loading...</div>;
   if (error) return <div style={{ color: "red" }}>{error}</div>;
   if (!questions || questions.length === 0) return <div style={{ color: "#fff", textAlign: "center" }}>No questions available.</div>;
-  
+
   // Ensure currentQuestion is within bounds
   const safeCurrentQuestion = Math.max(0, Math.min(currentQuestion, questions.length - 1));
   const q = questions[safeCurrentQuestion];
-  
+
   if (!q) return <div style={{ color: "#fff", textAlign: "center" }}>Question not found.</div>;
 
   return (
@@ -269,6 +327,7 @@ function Exam({ onFinish }) {
               currentQuestion={safeCurrentQuestion}
               answers={answers}
               marked={marked}
+              visited={visited}
               onJumpToQuestion={(index) => {
                 const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
                 setCurrentQuestion(safeIndex);
